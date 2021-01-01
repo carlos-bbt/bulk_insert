@@ -149,19 +149,32 @@ Book.bulk_insert(*destination_columns, ignore: true) do |worker|
 end
 ```
 
-### Update Duplicates (MySQL)
+### Update Duplicates (MySQL, PostgreSQL)
 
 If you don't want to ignore duplicate rows but instead want to update them
 then you can use the _update_duplicates_ option. Set this option to true
-and when a duplicate row is found the row will be updated with your new
-values. Default value for this option is false.
+(MySQL) or list unique column names (PostgreSQL) and when a duplicate row
+is found the row will be updated with your new values.
+Default value for this option is false.
+
+You can optionally declare specific column list for update duplicates 
+statement. Use the _update_columns_ option, then only these columns will be 
+updated. Be default, if option _update_columns_ not passed, used column list 
+from _column_names_ option.
 
 ```ruby
 destination_columns = [:title, :author]
+update_columns = [:title]
 
-# Update duplicate rows
-Book.bulk_insert(*destination_columns, update_duplicates: true) do |worker|
+# Update duplicate rows (MySQL)
+Book.bulk_insert(*destination_columns, update_duplicates: true, update_columns: update_columns) do |worker|
   worker.add(...)
+  worker.add(...)
+  # ...
+end
+
+# Update duplicate rows (PostgreSQL)
+Book.bulk_insert(*destination_columns, update_duplicates: %w[title], update_columns: update_columns) do |worker|
   worker.add(...)
   # ...
 end
